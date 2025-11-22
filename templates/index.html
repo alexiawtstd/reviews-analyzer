@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Умный консультант по подбору товаров</h1>
+            <p class="hero-subtitle">Анализ отзывов с iRecommend.com на основе искусственного интеллекта</p>
+            <div class="hero-features">
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI-анализ</h3>
+                    <p>Используем передовые модели машинного обучения для анализа тональности отзывов</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Детальная статистика</h3>
+                    <p>Получайте процентное соотношение положительных, нейтральных и негативных отзывов</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Быстрый анализ</h3>
+                    <p>Анализ первых 20 отзывов за считанные секунды</p>
+                </div>
+            </div>
+            <div class="hero-cta">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('instruction') }}" class="btn btn-primary btn-large">Начать анализ</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-large">Войти / Зарегистрироваться</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="info-section">
+    <div class="container">
+        <h2>Как это работает?</h2>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Вставьте ссылку</h3>
+                <p>Скопируйте ссылку на товар с сайта iRecommend.com</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Анализ отзывов</h3>
+                <p>Наш сервис автоматически извлекает и анализирует первые 20 отзывов</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Получите результат</h3>
+                <p>Получите детальную статистику и общую оценку товара</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

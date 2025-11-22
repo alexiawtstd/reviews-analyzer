@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Умный консультант по подбору товаров{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="{{ url_for('index') }}">Умный консультант</a>
+            </div>
+            <div class="nav-menu">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('instruction') }}" class="nav-link">Анализ</a>
+                    <a href="{{ url_for('profile') }}" class="nav-link profile-link">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Профиль
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="nav-link">Выход</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="nav-link">Войти</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Умный консультант по подбору товаров. Все права защищены.</p>
+        </div>
+    </footer>
+</body>
+</html>
+

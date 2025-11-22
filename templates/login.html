@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Авторизация - Умный консультант{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>{% if register %}Регистрация{% else %}Вход{% endif %}</h2>
+        
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">Имя пользователя</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            {% if register %}
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-block">
+                {% if register %}Зарегистрироваться{% else %}Войти{% endif %}
+            </button>
+        </form>
+        
+        <div class="auth-switch">
+            {% if register %}
+                <p>Уже есть аккаунт? <a href="{{ url_for('login') }}">Войти</a></p>
+            {% else %}
+                <p>Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a></p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

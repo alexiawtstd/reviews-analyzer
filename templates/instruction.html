@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Инструкция - Умный консультант{% endblock %}
+
+{% block content %}
+<div class="instruction-container">
+    <div class="container">
+        <h1>Как это работает?</h1>
+        
+        <div class="instruction-content">
+            <div class="instruction-steps">
+                <div class="instruction-step">
+                    <div class="step-icon">1️⃣</div>
+                    <h3>Найдите товар на iRecommend.com</h3>
+                    <p>Перейдите на сайт <a href="https://irecommend.ru" target="_blank">iRecommend.ru</a> и найдите интересующий вас товар</p>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-icon">2️⃣</div>
+                    <h3>Скопируйте ссылку</h3>
+                    <p>Скопируйте полную ссылку на страницу товара из адресной строки браузера</p>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-icon">3️⃣</div>
+                    <h3>Вставьте ссылку ниже</h3>
+                    <p>Вставьте скопированную ссылку в поле ниже и нажмите "Анализировать"</p>
+                </div>
+                
+                <div class="instruction-step">
+                    <div class="step-icon">4️⃣</div>
+                    <h3>Получите результат</h3>
+                    <p>Наш сервис проанализирует первые 20 отзывов и покажет детальную статистику</p>
+                </div>
+            </div>
+            
+            <div class="analysis-form-container">
+                <h2>Вставьте ссылку на товар</h2>
+                <form method="POST" action="{{ url_for('analyze') }}" class="analysis-form">
+                    <div class="form-group">
+                        <input 
+                            type="url" 
+                            name="url" 
+                            placeholder="https://irecommend.ru/content/..." 
+                            required
+                            class="url-input"
+                        >
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-large btn-block">
+                        Анализировать отзывы
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

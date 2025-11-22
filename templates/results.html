@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Результаты анализа - Умный консультант{% endblock %}
+
+{% block content %}
+<div class="results-container">
+    <div class="container">
+        <h1>Результаты анализа</h1>
+        
+        <div class="product-info">
+            <h2>{{ product_name }}</h2>
+            <p class="reviews-count">Проанализировано отзывов: {{ reviews_count }}</p>
+        </div>
+        
+        <div class="results-grid">
+            <div class="result-card overall-rating">
+                <h3>Общая оценка</h3>
+                <div class="rating-display">
+                    <span class="rating-value">{{ overall_rating }}</span>
+                    <span class="rating-max">/ 5.0</span>
+                </div>
+                <div class="rating-stars">
+                    {% for i in range(5) %}
+                        <span class="star {% if i < overall_rating|int %}filled{% endif %}">★</span>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="result-card positive">
+                <h3>Положительные</h3>
+                <div class="percentage-display">
+                    <span class="percentage-value">{{ positive }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill positive-fill" style="width: {{ positive }}%"></div>
+                </div>
+            </div>
+            
+            <div class="result-card neutral">
+                <h3>Нейтральные</h3>
+                <div class="percentage-display">
+                    <span class="percentage-value">{{ neutral }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill neutral-fill" style="width: {{ neutral }}%"></div>
+                </div>
+            </div>
+            
+            <div class="result-card negative">
+                <h3>Негативные</h3>
+                <div class="percentage-display">
+                    <span class="percentage-value">{{ negative }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill negative-fill" style="width: {{ negative }}%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="results-actions">
+            <a href="{{ url_for('instruction') }}" class="btn btn-secondary">Новый анализ</a>
+            <a href="{{ url_for('profile') }}" class="btn btn-primary">История анализов</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

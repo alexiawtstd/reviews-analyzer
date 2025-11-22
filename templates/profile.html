@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль - Умный консультант{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="container">
+        <h1>Профиль пользователя</h1>
+        
+        <div class="profile-info">
+            <div class="info-card">
+                <h3>Информация о пользователе</h3>
+                <div class="info-item">
+                    <span class="info-label">Имя пользователя:</span>
+                    <span class="info-value">{{ user.username }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">{{ user.email }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Дата регистрации:</span>
+                    <span class="info-value">{{ user.created_at.strftime('%d.%m.%Y') }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <h2>История анализов</h2>
+            
+            {% if analyses %}
+                <div class="analyses-list">
+                    {% for analysis in analyses %}
+                        <div class="analysis-item">
+                            <div class="analysis-header">
+                                <h3>{{ analysis.product_name or 'Неизвестный товар' }}</h3>
+                                <span class="analysis-date">{{ analysis.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                            </div>
+                            <div class="analysis-stats">
+                                <div class="stat-item positive">
+                                    <span class="stat-label">Положительные:</span>
+                                    <span class="stat-value">{{ "%.1f"|format(analysis.positive_percent) }}%</span>
+                                </div>
+                                <div class="stat-item neutral">
+                                    <span class="stat-label">Нейтральные:</span>
+                                    <span class="stat-value">{{ "%.1f"|format(analysis.neutral_percent) }}%</span>
+                                </div>
+                                <div class="stat-item negative">
+                                    <span class="stat-label">Негативные:</span>
+                                    <span class="stat-value">{{ "%.1f"|format(analysis.negative_percent) }}%</span>
+                                </div>
+                                <div class="stat-item rating">
+                                    <span class="stat-label">Оценка:</span>
+                                    <span class="stat-value">{{ "%.2f"|format(analysis.overall_rating) }}/5.0</span>
+                                </div>
+                            </div>
+                            <div class="analysis-link">
+                                <a href="{{ analysis.product_url }}" target="_blank" class="link-external">Открыть товар</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <p>У вас пока нет сохраненных анализов.</p>
+                    <a href="{{ url_for('instruction') }}" class="btn btn-primary">Начать анализ</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
