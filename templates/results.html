@@ -5,11 +5,16 @@
 {% block content %}
 <div class="results-container">
     <div class="container">
-        <h1>Результаты анализа</h1>
+        <div class="results-header">
+            <h1>Результаты анализа</h1>
+            {% if processing_info %}
+            <p class="processing-info"> {{ processing_info }}</p>
+            {% endif %}
+        </div>
         
         <div class="product-info">
             <h2>{{ product_name }}</h2>
-            <p class="reviews-count">Проанализировано отзывов: {{ reviews_count }}</p>
+            <p class="reviews-count"> Проанализировано отзывов: {{ reviews_count }}</p>
         </div>
         
         <div class="results-grid">
@@ -24,6 +29,17 @@
                         <span class="star {% if i < overall_rating|int %}filled{% endif %}">★</span>
                     {% endfor %}
                 </div>
+                <p class="rating-description">
+                    {% if overall_rating >= 4.0 %}
+                    👍 Отличный товар
+                    {% elif overall_rating >= 3.0 %}
+                    ✅ Хороший товар
+                    {% elif overall_rating >= 2.0 %}
+                    ⚠️ Среднее качество
+                    {% else %}
+                    👎 Низкое качество
+                    {% endif %}
+                </p>
             </div>
             
             <div class="result-card positive">
@@ -57,11 +73,31 @@
             </div>
         </div>
         
+        <div class="results-summary">
+            <h3>📈 Статистика анализа</h3>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <span class="summary-label">Доля положительных отзывов</span>
+                    <span class="summary-value {% if positive >= 70 %}positive{% elif positive >= 40 %}neutral{% else %}negative{% endif %}">
+                        {{ positive }}%
+                    </span>
+                </div>
+                <div class="summary-card">
+                    <span class="summary-label">Уровень доверия</span>
+                    <span class="summary-value">
+                        {% if reviews_count >= 15 %}Высокий
+                        {% elif reviews_count >= 8 %}Средний
+                        {% else %}Низкий
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+        
         <div class="results-actions">
             <a href="{{ url_for('instruction') }}" class="btn btn-secondary">Новый анализ</a>
-            <a href="{{ url_for('profile') }}" class="btn btn-primary">История анализов</a>
+            <a href="{{ url_for('profile') }}" class="btn btn-primary">История</a>
         </div>
     </div>
 </div>
 {% endblock %}
-
