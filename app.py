@@ -286,8 +286,8 @@ def register():
             flash('Имя пользователя должно содержать минимум 3 символа', 'error')
             return render_template('login.html', register=True)
         
-        if len(password) < 6:
-            flash('Пароль должен содержать минимум 6 символов', 'error')
+        if len(password) < 8:
+            flash('Пароль должен содержать минимум 8 символов', 'error')
             return render_template('login.html', register=True)
         
         if User.query.filter_by(username=username).first():
@@ -449,3 +449,4 @@ if __name__ == '__main__':
     else:
         from waitress import serve
         serve(app, host='0.0.0.0', port=port)
+
