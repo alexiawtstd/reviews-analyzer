@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Авторизация - Умный консультант{% endblock %}
+{% block title %}{% if register %}Регистрация{% else %}Вход{% endif %} - Умный консультант{% endblock %}
 
 {% block content %}
 <div class="auth-container">
@@ -10,7 +10,13 @@
         <form method="POST" class="auth-form">
             <div class="form-group">
                 <label for="username">Имя пользователя</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required 
+                       minlength="3" maxlength="80"
+                       pattern="[a-zA-Z0-9_]+"
+                       title="Только буквы, цифры и подчеркивания">
+                {% if register %}
+                <small>Только буквы, цифры и подчеркивания (3-80 символов)</small>
+                {% endif %}
             </div>
             
             {% if register %}
@@ -22,8 +28,19 @@
             
             <div class="form-group">
                 <label for="password">Пароль</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required
+                       {% if register %}minlength="6"{% endif %}>
+                {% if register %}
+                <small>Минимум 6 символов</small>
+                {% endif %}
             </div>
+
+            {% if register %}
+            <div class="form-group">
+                <label for="confirm_password">Подтвердите пароль</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+            </div>
+            {% endif %}
             
             <button type="submit" class="btn btn-primary btn-block">
                 {% if register %}Зарегистрироваться{% else %}Войти{% endif %}
@@ -39,5 +56,19 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
+{% if register %}
+<script>
+    // Проверка совпадения паролей
+    document.querySelector('.auth-form').addEventListener('submit', function(e) {
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        
+        if (password !== confirmPassword) {
+            e.preventDefault();
+            alert('Пароли не совпадают!');
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}
