@@ -70,11 +70,11 @@ def load_user(user_id):
 # Инициализация модели анализа тональности
 print("Загрузка модели анализа тональности...")
 try:
-    sentiment_analyzer = pipeline(
-        "sentiment-analysis",
-        model="blanchefort/rubert-base-sentiment",
-        tokenizer="blanchefort/rubert-base-sentiment"
-    )
+sentiment_analyzer = pipeline(
+    "sentiment-analysis",
+    model="cointegrated/rubert-tiny-sentiment",
+    tokenizer="cointegrated/rubert-tiny-sentiment"
+)
     print("Модель загружена успешно!")
 except Exception as e:
     print(f"Ошибка загрузки модели: {e}")
@@ -331,3 +331,4 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_ENV') == 'development'
     app.run(debug=debug, host='0.0.0.0', port=port)
+
