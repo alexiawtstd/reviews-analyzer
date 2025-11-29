@@ -17,7 +17,7 @@
 ## Технологии
 
 - **Backend**: Flask (Python)
-- **База данных**: SQLite (SQLAlchemy)
+- **База данных**: PostgreSQL
 - **Анализ тональности**: Transformers (blanchefort/rubert-base-sentiment)
 - **Парсинг**: BeautifulSoup4, Requests
 - **Frontend**: HTML, CSS, JavaScript
@@ -46,6 +46,8 @@
 │   ├── login.html
 │   ├── instruction.html
 │   ├── results.html
+│   ├── 404.html
+│   ├── 500.html
 │   └── profile.html
 └── static/
     └── css/
@@ -55,5 +57,6 @@
 ## Лицензия
 
 Этот проект создан в образовательных целях.
+
 
 
