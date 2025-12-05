@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-import cloudscraper  # <-- Используем вместо requests
+import cloudscraper
 from bs4 import BeautifulSoup
 from transformers import pipeline
 import re
@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 import time
 import random
 import logging
+import torch
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,8 +20,9 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'my-secret-key-123')
 
+# бд
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
     if database_url.startswith("postgres://"):
@@ -61,48 +63,71 @@ class Analysis(db.Model):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-print("Загрузка модели анализа тональности...")
+# загрузка модели
+print("Загрузка модели...")
 try:
     sentiment_analyzer = pipeline(
         "sentiment-analysis",
-        model="blanchefort/rubert-base-sentiment",
-        tokenizer="blanchefort/rubert-base-sentiment"
+        model="seara/rubert-tiny2-russian-sentiment",
+        tokenizer="seara/rubert-tiny2-russian-sentiment"
     )
     print("Модель загружена успешно!")
 except Exception as e:
     print(f"Ошибка загрузки модели: {e}")
     sentiment_analyzer = None
 
-scraper = cloudscraper.create_scraper(
-    browser={
-        'browser': 'chrome',
-        'platform': 'windows',
-        'desktop': True
-    }
-)
+# обход защиты сайта, с которого парсим
+def create_fresh_scraper():
+    s = cloudscraper.create_scraper(
+        browser={
+            'browser': 'chrome',
+            'platform': 'windows',
+            'desktop': True
+        }
+    )
+    s.headers.update({
+        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    })
+    return s
 
+scraper = create_fresh_scraper()
 
 def get_html_content(url):
-    try:
-        time.sleep(random.uniform(0.5, 1.5))
-        r = scraper.get(url)
-        if r.status_code == 200:
-            return r.text
-        print(f"Ошибка доступа к {url}: {r.status_code}")
-        return None
-    except Exception as e:
-        print(f"Ошибка сети при запросе {url}: {e}")
-        return None
+    global scraper
+    retries = 3
 
+    for i in range(retries):
+        try:
+            time.sleep(random.uniform(2, 5))
+            r = scraper.get(url)
+            if r.status_code == 200:
+                return r.text
 
+            if r.status_code in [403, 521, 520]:
+                print(f"Попытка {i + 1}/{retries}: Защита {r.status_code}. Меняю сессию...")
+                scraper = create_fresh_scraper()
+                time.sleep(5)
+                continue
+
+            print(f"Ошибка доступа к {url}: {r.status_code}")
+            return None
+
+        except Exception as e:
+            print(f"Ошибка сети при запросе {url}: {e}")
+            time.sleep(3)
+
+    print("Не удалось пробиться через защиту после всех попыток.")
+    return None
+
+# парсинг
 def parse_reviews(url_tovara):
     base_url = 'https://irecommend.ru'
     print(f"Начинаю парсинг: {url_tovara}")
-
     html = get_html_content(url_tovara)
     if not html:
         return "Ошибка доступа", []
-
     soup = BeautifulSoup(html, 'html.parser')
 
     title_tag = soup.find('h1')
@@ -118,22 +143,28 @@ def parse_reviews(url_tovara):
             if href and href.startswith('/content/'):
                 full_link = base_url + href
                 product_path = url_tovara.replace(base_url, '')
+
                 if href != product_path and full_link not in links_to_parse:
                     links_to_parse.append(full_link)
     else:
-        print("Контейнер list-comments не найден (возможно, другая верстка или защита).")
+        print("!!! Не нашел контейнер <ul class='list-comments'>. Возможно, сработала защита.")
 
     final_links = links_to_parse[:20]
     print(f"Найдено ссылок: {len(links_to_parse)}. Буду обрабатывать: {len(final_links)}")
 
     reviews_text_list = []
 
+    count = 0
     for link in final_links:
+        count += 1
+        print(f"[{count}] Качаю отзыв: {link}")
+
         review_html = get_html_content(link)
         if review_html:
             soup_rev = BeautifulSoup(review_html, 'html.parser')
 
             review_body = soup_rev.find('div', itemprop='reviewBody')
+
             if not review_body:
                 review_body = soup_rev.find('div', class_='description')
 
@@ -141,10 +172,14 @@ def parse_reviews(url_tovara):
                 text = review_body.get_text(separator=' ', strip=True)
                 if len(text) > 50:
                     reviews_text_list.append(text)
+            else:
+                print("    Текст не найден внутри страницы")
+        else:
+            print("    Не удалось открыть страницу отзыва")
 
     return product_name, reviews_text_list
 
-
+# анализ отзывов с помощью модели
 def analyze_sentiment(reviews):
     if not reviews:
         return 0, 0, 0, 0
@@ -155,21 +190,20 @@ def analyze_sentiment(reviews):
 
     for review in reviews:
         try:
-            review_text = review[:512]
+            review_text = review
             result = sentiment_analyzer(review_text)
 
-            label = result[0]['label'].lower()
-            score = result[0].get('score', 0.5)
+            label = result[0]['label']
 
-            if 'positive' in label or 'pozitive' in label or 'label_2' in label:
+            if label == 'positive':
                 positive += 1
-            elif 'negative' in label or 'negative' in label or 'label_0' in label:
+            elif label == 'negative':
                 negative += 1
             else:
                 neutral += 1
 
         except Exception as e:
-            print(f"Ошибка анализа: {e}")
+            print(f"Ошибка анализа одного отзыва: {e}")
             neutral += 1
 
     total = len(reviews)
@@ -179,10 +213,12 @@ def analyze_sentiment(reviews):
     neu_pct = (neutral / total) * 100
     neg_pct = (negative / total) * 100
 
-    overall = 1 + (pos_pct / 100) * 4
+    score_sum = (positive * 5) + (neutral * 3) + (negative * 1)
+    overall = score_sum / total
 
     return pos_pct, neu_pct, neg_pct, overall
 
+# связь с фронтендом
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -231,6 +267,7 @@ def instruction():
 def analyze():
     url = request.form.get('url')
 
+# то, что разбивает нам сердце (обработка ошибок)
     if not url or 'irecommend' not in url:
         flash('Введите корректную ссылку на irecommend.ru', 'error')
         return redirect(url_for('instruction'))
@@ -238,13 +275,14 @@ def analyze():
     product_name, reviews = parse_reviews(url)
 
     if not reviews:
-        flash('Не удалось найти отзывы. Возможно, защита сайта не пускает или отзывов нет.', 'error')
+        flash('Не удалось найти отзывы. Возможно, защита сайта не пускает или отзывов нет:(', 'error')
         return redirect(url_for('instruction'))
 
     if sentiment_analyzer is None:
         flash('Нейросеть не загружена. Проверьте консоль.', 'error')
         return redirect(url_for('instruction'))
 
+# подгрузка анализа в историю
     pos, neu, neg, rating = analyze_sentiment(reviews)
 
     analysis = Analysis(
@@ -266,7 +304,6 @@ def analyze():
                            negative=round(neg, 1),
                            overall_rating=round(rating, 2),
                            reviews_count=len(reviews))
-
 
 @app.route('/profile')
 @login_required
