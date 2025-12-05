@@ -1,10 +1,13 @@
 services:
   - type: web
     name: reviews-analyzer
-    env: python
+    runtime: python
     plan: free
-    pythonVersion: "3.11.9"
-    buildCommand: pip install -r requirements.txt
+    buildCommand: |
+      python --version
+      pip install --upgrade pip
+      pip install -r requirements.txt
+      pip install torch==2.5.0+cpu --index-url https://download.pytorch.org/whl/cpu
     startCommand: gunicorn app:app
     envVars:
       - key: SECRET_KEY
