@@ -16,7 +16,7 @@
 ## Технологии
 
 - **Backend**: Flask (Python)
-- **База данных**: PostgreSQL, SQLite (для локальной разработки)
+- **База данных**: PostgreSQL, SQLite (для локальной разработки), Flask-SQLAlchemy
 - **Анализ тональности**: torch, transformers (Hugging Face) с моделью `seara/rubert-tiny2-russian-sentiment`
 - **Парсинг**: beautifulSoup4, cloudscraper, request
 - **Frontend**: HTML, CSS, JavaScript
@@ -55,6 +55,7 @@
 ## Лицензия
 
 Этот проект создан в образовательных целях.
+
 
 
 
